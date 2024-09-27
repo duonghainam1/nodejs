@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import instance from "../../../config/config";
 import { EllipsisOutlined, LeftOutlined, MenuOutlined, RightOutlined } from "@ant-design/icons";
@@ -15,13 +15,25 @@ const List_Music = () => {
     const { mutate } = Mutation_Music("DELETE")
     const { mutate: update_status } = Mutation_Music("UPDATE")
     const { mutate: reset_music } = Mutation_Music("RESET")
+    const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
+
     const { data, isLoading } = useQuery({
-        queryKey: ["A", selectedStatus, currentPage, limit],
+        queryKey: ["A", selectedStatus, currentPage, limit, debouncedSearch],
         queryFn: async () => {
-            const { data } = await instance.get(`/sound_clouds/1?_status=${selectedStatus}&_page=${currentPage}&_limit=${limit}`);
+            const { data } = await instance.get(`/sound_clouds/1?_status=${selectedStatus}&_page=${currentPage}&_limit=${limit}&_search=${debouncedSearch}`);
             return data;
         },
     });
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedSearch(searchTerm);
+        }, 300);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [searchTerm]);
     const handleDropdown = (id: number) => {
         if (isDropdown === id) {
             setIsDropdown(null);
@@ -37,6 +49,8 @@ const List_Music = () => {
         setCurrentPage(page);
     };
     const handleUpdate = (id: number | string, newStatus: any) => {
+        console.log(id, newStatus);
+
         update_status({ id, status: newStatus });
         setIsEdit(null);
     };
@@ -80,7 +94,14 @@ const List_Music = () => {
                     {isOpen && (
                         <>
                             <button className="border rounded px-4 py-2 lg:hidden" onClick={reset_music}>Reset</button>
-                            <input type="text" className="border w-1/2 px-2 py-1 rounded outline-none block lg:hidden" />
+                            <input type="text" className="border w-1/2 px-2 py-1 rounded outline-none block lg:hidden"
+                                placeholder="Tìm kiếm..."
+                                value={searchTerm}
+                                onChange={(e) => {
+                                    setSearchTerm(e.target.value);
+                                    setCurrentPage(1);
+                                }}
+                            />
                             <select
                                 className="border px-2 rounded outline-none w-1/2 lg:hidden"
                                 value={selectedStatus}
@@ -101,7 +122,12 @@ const List_Music = () => {
                     )}
                     <button className="border rounded px-4 py-2 hidden lg:block" onClick={reset_music}>Reset</button>
                     <div className="flex justify-end gap-4">
-                        <input type="text" className="border w-1/2 px-2 py-1 rounded outline-none hidden lg:block" />
+                        <input type="text" className="border w-[250px] px-2 py-1 rounded outline-none hidden lg:block" placeholder="Tìm kiếm..."
+                            value={searchTerm}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                setCurrentPage(1);
+                            }} />
                         <select
                             className="border hidden lg:block py-1 px-2 rounded outline-none w-full"
                             value={selectedStatus}

@@ -12,7 +12,7 @@ export const Mutation_Music = (action: Action) => {
                     case 'DELETE':
                         return await delete_music(data)
                     case 'UPDATE':
-                        return await update_status_music(data._id, data.status)
+                        return await update_status_music(data.id, data.status)
                     case 'RESET':
                         return await reset_music()
                     default:

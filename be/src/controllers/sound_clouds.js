@@ -12,7 +12,11 @@ export const sound_clouds_paginate = async (req, res) => {
             filter.status = _status;
         }
         if (_search) {
-            filter.title = { $regex: _search, $options: 'i' };
+            filter.$or = [
+                { link: { $regex: _search, $options: 'i' } },
+                { track: { $regex: _search, $options: 'i' } },
+                { country: { $regex: _search, $options: 'i' } }
+            ];
         }
         const data = await Sound_clouds.paginate(filter, options);
         return res.status(200).json(data);
@@ -25,6 +29,8 @@ export const sound_clouds_paginate = async (req, res) => {
 export const update_Status = async (req, res) => {
     const { status } = req.body;
     const { id } = req.params;
+    console.log(id);
+
     try {
         const data = await Sound_clouds.findByIdAndUpdate(id, { status }, { new: true })
         return res.status(200).json(data);
