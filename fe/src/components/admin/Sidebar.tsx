@@ -22,10 +22,10 @@ function getItem(
 }
 
 const items: MenuItem[] = [
-    getItem(<NavLink to="/admin">Thống kê</NavLink>, '1', <PieChartOutlined />),
-    getItem(<NavLink to="/music">Sản phẩm</NavLink>, 'sub1', <FileTextOutlined />, [
-        getItem(<NavLink to="/admin/products">Sản phẩm</NavLink>, '3'),
-        getItem(<NavLink to="/admin/categori">Danh mục</NavLink>, '4'),
+    getItem(<NavLink to="/admin">Dashboard</NavLink>, '1', <PieChartOutlined />),
+    getItem(<NavLink to="/music">Muisc</NavLink>, 'sub1', <FileTextOutlined />, [
+        getItem(<NavLink to="/admin/products">Music</NavLink>, '3'),
+        // getItem(<NavLink to="/admin/categori">Danh mục</NavLink>, '4'),
     ]),
 ]
 const Sidebar = () => {
