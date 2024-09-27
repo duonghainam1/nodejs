@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import instance from "../../../config/config";
 import { EllipsisOutlined, LeftOutlined, MenuOutlined, RightOutlined } from "@ant-design/icons";
-import { delete_music, update_status_music } from "../../../services/music";
+import { Mutation_Music } from "../../../common/Hock/Music/Mutation_Music";
 import { message } from "antd";
 
 const List_Music = () => {
@@ -12,7 +12,9 @@ const List_Music = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [limit, setLimit] = useState(10);
     const [isEdit, setIsEdit] = useState<string | number | null>(null);
-    const queryClient = useQueryClient();
+    const { mutate } = Mutation_Music("DELETE")
+    const { mutate: update_status } = Mutation_Music("UPDATE")
+    const { mutate: reset_music } = Mutation_Music("RESET")
     const { data, isLoading } = useQuery({
         queryKey: ["A", selectedStatus, currentPage, limit],
         queryFn: async () => {
@@ -20,36 +22,6 @@ const List_Music = () => {
             return data;
         },
     });
-    const { mutate } = useMutation({
-        mutationFn: async (id: number | string) => {
-            try {
-                await delete_music(id)
-            } catch (error) {
-                console.log(error);
-            }
-        },
-        onSuccess: () => {
-            message.success("Xóa thành công");
-            queryClient.invalidateQueries({
-                queryKey: ["A", selectedStatus, currentPage, limit],
-            })
-        }
-    })
-    const { mutate: update_status } = useMutation({
-        mutationFn: async ({ id, status }: { id: string | number, status: any }) => {
-            try {
-                return await update_status_music(id, status)
-            } catch (error) {
-                console.log(error);
-            }
-        },
-        onSuccess: () => {
-            message.success("Cập nhật trạng thái thành công");
-            queryClient.invalidateQueries({
-                queryKey: ["A", selectedStatus, currentPage, limit],
-            });
-        }
-    })
     const handleDropdown = (id: number) => {
         if (isDropdown === id) {
             setIsDropdown(null);
@@ -71,6 +43,18 @@ const List_Music = () => {
     const handleEdit = (id: string | number) => {
         setIsEdit(isEdit === id ? null : id);
     }
+    const handleCopy = async (item: any) => {
+        const trackLines = item.track.flatMap((trackItem: string) => {
+            return trackItem.split(',').map(t => t.trim());
+        });
+        const formattedText = `${item.link}\n${trackLines.join('\n')}\n`;
+        try {
+            await navigator.clipboard.writeText(formattedText);
+            message.success('Đã sao chép vào');
+        } catch (err) {
+            message.error('Sao chép thất bại');
+        }
+    };
     if (isLoading) {
         return <div>loading...</div>;
     }
@@ -95,8 +79,8 @@ const List_Music = () => {
                 <div className="flex justify-between gap-4">
                     {isOpen && (
                         <>
-                            <button className="border rounded px-4 py-2 lg:hidden">Reset</button>
-                            <input type="text" placeholder="Seach" className="border w-1/2 px-2 py-1 rounded outline-none lg:hidden" />
+                            <button className="border rounded px-4 py-2 lg:hidden" onClick={reset_music}>Reset</button>
+                            <input type="text" className="border w-1/2 px-2 py-1 rounded outline-none block lg:hidden" />
                             <select
                                 className="border px-2 rounded outline-none w-1/2 lg:hidden"
                                 value={selectedStatus}
@@ -115,11 +99,9 @@ const List_Music = () => {
                         </>
 
                     )}
-                    <button className="border rounded px-4 py-2 hidden lg:block">Reset</button>
+                    <button className="border rounded px-4 py-2 hidden lg:block" onClick={reset_music}>Reset</button>
                     <div className="flex justify-end gap-4">
-                        <input type="text" placeholder="Seach"
-                            className="border hidden lg:block py-1 px-2 rounded outline-none w-full"
-                        />
+                        <input type="text" className="border w-1/2 px-2 py-1 rounded outline-none hidden lg:block" />
                         <select
                             className="border hidden lg:block py-1 px-2 rounded outline-none w-full"
                             value={selectedStatus}
@@ -144,7 +126,10 @@ const List_Music = () => {
                         <tr className="border">
                             <th className="border px-4 py-2">Id</th>
                             <th className="border px-4 py-2">Link</th>
+                            <th className="border px-4 py-2">Count</th>
                             <th className="border px-4 py-2">Track</th>
+                            <th className="border px-4 py-2">Scan</th>
+                            <th className="border px-4 py-2">Number Song</th>
                             <th className="border px-4 py-2">Country</th>
                             <th className="border px-4 py-2">Views</th>
                             <th className="border px-4 py-2">Status</th>
@@ -152,11 +137,14 @@ const List_Music = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {data?.docs.map((item: any) => (
-                            <tr key={item.id} className="border">
+                        {data?.docs?.map((item: any) => (
+                            <tr key={item._id} className="border">
                                 <td className="border px-4 py-2">{item.id}</td>
                                 <td className="border px-4 py-2">{item.link}</td>
+                                <td className="border px-4 py-2">{item.count}</td>
                                 <td className="border px-4 py-2">{item.track}</td>
+                                <td className="border px-4 py-2">{item.scan}</td>
+                                <td className="border px-4 py-2">{item.number_of_songs}</td>
                                 <td className="border px-4 py-2">{item.country}</td>
                                 <td className="border px-4 py-2">{item.views}</td>
                                 <td className="border px-4 py-2">
@@ -177,17 +165,17 @@ const List_Music = () => {
                                     )}
                                 </td>
                                 <td className="relative flex items-center justify-center gap-4 px-4 py-2">
-                                    <button className="lg:hidden" onClick={() => handleDropdown(item.id)}>
+                                    <button className="lg:hidden" onClick={() => handleDropdown(item?.id)}>
                                         <EllipsisOutlined />
                                     </button>
                                     {isDropdown === item.id && (
                                         <div className="absolute top-full mt-2 right-0 bg-white shadow-lg rounded w-28 z-10 lg:hidden">
                                             <ul>
                                                 <li className="border-b hover:bg-gray-100">
-                                                    <button className="w-full px-4 py-2 text-left">Copy</button>
+                                                    <button className="w-full px-4 py-2 text-left" onClick={() => handleCopy(item)}>Copy</button>
                                                 </li>
                                                 <li className="border-b hover:bg-gray-100">
-                                                    <button className="w-full px-4 py-2 text-left" onClick={() => handleEdit(item._id)}>Edit</button>
+                                                    <button className="w-full px-4 py-2 text-left" onClick={() => handleEdit(item?._id)}>Edit</button>
                                                 </li>
                                                 <li className="hover:bg-gray-100">
                                                     <button className="w-full px-4 py-2 text-left" onClick={() => mutate(item?._id)}>Delete</button>
@@ -195,8 +183,8 @@ const List_Music = () => {
                                             </ul>
                                         </div>
                                     )}
-                                    <button className="border rounded p-2 hidden lg:block">Copy</button>
-                                    <button className="border rounded p-2 hidden lg:block" onClick={() => handleEdit(item._id)}>Edit</button>
+                                    <button className="border rounded p-2 hidden lg:block" onClick={() => handleCopy(item)}>Copy</button>
+                                    <button className="border rounded p-2 hidden lg:block" onClick={() => handleEdit(item?._id)}>Edit</button>
                                     <button className="border rounded p-2 hidden lg:block" onClick={() => mutate(item?._id)}>Delete</button>
                                 </td>
                             </tr>

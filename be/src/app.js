@@ -16,23 +16,24 @@ connectDB(process.env.DB_URI);
 app.use('/api', Router_sound_clouds);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const directoryPath = path.join(__dirname, './data');
 
-const filePath = path.join(__dirname, './model/10336900.txt');
+
+
+// const filePath = path.join(__dirname, './data/nam.txt');
 
 const reading = async (filePath) => {
     const fileData = fs.readFileSync(filePath, 'utf8');
     const lines = fileData.split('\n');
 
     for (const line of lines) {
-        const [id, link, track, country, views] = line.split(' | ').map(item => item.trim());
-
-        // Kiểm tra xem dữ liệu đã tồn tại chưa
+        const [id, link, count, track, status, scan, number_of_songs, country, views] = line.split(' | ').map(item => item.trim());
         const existingData = await sound_clouds.findOne({ id });
-        console.log(existingData);
+        // console.log('existingData', existingData);
 
         if (!existingData) {
             try {
-                await sound_clouds.insertMany({ id, link, track, country, views });
+                await sound_clouds.insertMany({ id, link, count, track, status, scan, number_of_songs, country, views });
                 console.log('Data imported successfully!');
             } catch (error) {
                 console.log('Error importing data:', error.message);
@@ -45,14 +46,19 @@ const reading = async (filePath) => {
 
 const importData = async () => {
     try {
-        await reading(filePath);
+        const files = fs.readdirSync(directoryPath);
+        const txtFiles = files.filter(file => file.endsWith('.txt'));
+        for (const file of txtFiles) {
+            const filePath = path.join(directoryPath, file);
+            await reading(filePath);
+        }
     } catch (error) {
         console.log('Error importing data:', error.message);
     }
 };
 
 importData();
-// app.listen(process.env.PORT, () => {
-//     console.log(`Server is running on port ${process.env.PORT}`);
-// })
-export const viteNodeApp = app;
+app.listen(process.env.PORT, () => {
+    console.log(`Server is running on port ${process.env.PORT}`);
+})
+// export const viteNodeApp = app;
