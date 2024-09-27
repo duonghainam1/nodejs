@@ -17,14 +17,14 @@ const Lay_out_admin = () => {
                 <Sidebar />
                 <Layout>
                     <Header_admin />
-                    <Content style={{ margin: '0 16px' }}>
+                    <Content style={{ margin: '0 12px' }}>
                         <Breadcrumb style={{ margin: '16px 0' }}>
                             <Breadcrumb.Item>User</Breadcrumb.Item>
                             <Breadcrumb.Item>Bill</Breadcrumb.Item>
                         </Breadcrumb>
                         <div
                             style={{
-                                padding: 24,
+                                padding: 0,
                                 minHeight: 360,
                                 background: colorBgContainer,
                                 borderRadius: borderRadiusLG,

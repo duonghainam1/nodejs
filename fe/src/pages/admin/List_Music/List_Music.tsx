@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import instance from "../../../config/config";
-import { EllipsisOutlined, LeftOutlined, RightOutlined } from "@ant-design/icons";
+import { EllipsisOutlined, LeftOutlined, MenuOutlined, RightOutlined } from "@ant-design/icons";
 import { delete_music, update_status_music } from "../../../services/music";
 import { message } from "antd";
 
@@ -9,6 +9,7 @@ const List_Music = () => {
     const [selectedStatus, setSelectedStatus] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [isDropdown, setIsDropdown] = useState<number | null>(null);;
+    const [isOpen, setIsOpen] = useState(false);
     const [limit, setLimit] = useState(10);
     const [isEdit, setIsEdit] = useState<string | number | null>(null);
     const queryClient = useQueryClient();
@@ -56,6 +57,9 @@ const List_Music = () => {
             setIsDropdown(id);
         }
     }
+    const handleOpen = () => {
+        setIsOpen(!isOpen);
+    }
     const totalPages = data?.totalPages || 1;
     const handlePageChange = (page: any) => {
         setCurrentPage(page);
@@ -72,36 +76,66 @@ const List_Music = () => {
     }
     return (
         <div className="container mx-auto p-4">
-            <div className="flex flex-col gap-5 sm:flex-row justify-between mb-5">
-                <div className="flex gap-3 items-center">
-                    <p>Show</p>
-                    <select className="border rounded py-1 px-3 outline-none" name="" id="" onChange={(e) => {
-                        setLimit(Number(e.target.value));
-                        setCurrentPage(1);
-                    }} value={limit}>
-                        <option value={10}>10</option>
-                        <option value={25}>25</option>
-                        <option value={50}>50</option>
-                    </select>
-                    <p>entries</p>
-                </div>
-                <div className="flex sm:flex-row gap-4">
-                    <input type="text" placeholder="Seach" className="border w-1/2 px-2 py-1 rounded outline-none" />
-                    <select
-                        className="border px-2 rounded outline-none"
-                        value={selectedStatus}
-                        onChange={(e) => {
-                            setSelectedStatus(e.target.value);
+            <div className="flex flex-col gap-5 justify-between mb-5">
+                <div className="flex justify-between gap-3 items-center">
+                    <div className="flex gap-3 items-center">
+                        <p>Show</p>
+                        <select className="border rounded py-1 px-3 outline-none" name="" id="" onChange={(e) => {
+                            setLimit(Number(e.target.value));
                             setCurrentPage(1);
-                        }}
-                    >
-                        <option value="">Lọc trạng thái</option>
-                        <option value="0">Chờ</option>
-                        <option value="1">Xong</option>
-                        <option value="2">Xóa</option>
-                        <option value="3">Không Lời</option>
-                        <option value="4">Không có người dùng</option>
-                    </select>
+                        }} value={limit}>
+                            <option value={10}>10</option>
+                            <option value={25}>25</option>
+                            <option value={50}>50</option>
+                        </select>
+                        <p>entries</p>
+                    </div>
+                    <button className="lg:hidden" onClick={handleOpen}><MenuOutlined style={{ fontSize: '18px' }} /></button>
+                </div>
+                <div className="flex justify-between gap-4">
+                    {isOpen && (
+                        <>
+                            <button className="border rounded px-4 py-2 lg:hidden">Reset</button>
+                            <input type="text" placeholder="Seach" className="border w-1/2 px-2 py-1 rounded outline-none lg:hidden" />
+                            <select
+                                className="border px-2 rounded outline-none w-1/2 lg:hidden"
+                                value={selectedStatus}
+                                onChange={(e) => {
+                                    setSelectedStatus(e.target.value);
+                                    setCurrentPage(1);
+                                }}
+                            >
+                                <option value="">Lọc trạng thái</option>
+                                <option value="0">Chờ</option>
+                                <option value="1">Xong</option>
+                                <option value="2">Xóa</option>
+                                <option value="3">Không Lời</option>
+                                <option value="4">Không có người dùng</option>
+                            </select>
+                        </>
+
+                    )}
+                    <button className="border rounded px-4 py-2 hidden lg:block">Reset</button>
+                    <div className="flex justify-end gap-4">
+                        <input type="text" placeholder="Seach"
+                            className="border hidden lg:block py-1 px-2 rounded outline-none w-full"
+                        />
+                        <select
+                            className="border hidden lg:block py-1 px-2 rounded outline-none w-full"
+                            value={selectedStatus}
+                            onChange={(e) => {
+                                setSelectedStatus(e.target.value);
+                                setCurrentPage(1);
+                            }}
+                        >
+                            <option value="">Lọc trạng thái</option>
+                            <option value="0">Chờ</option>
+                            <option value="1">Xong</option>
+                            <option value="2">Xóa</option>
+                            <option value="3">Không Lời</option>
+                            <option value="4">Không có người dùng</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             <div className="overflow-x-auto">

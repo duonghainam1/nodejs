@@ -22,9 +22,9 @@ function getItem(
 }
 
 const items: MenuItem[] = [
-    getItem(<NavLink to="/admin">Dashboard</NavLink>, '1', <PieChartOutlined />),
+    getItem(<NavLink to="/">Dashboard</NavLink>, '1', <PieChartOutlined />),
     getItem(<NavLink to="/music">Muisc</NavLink>, 'sub1', <FileTextOutlined />, [
-        getItem(<NavLink to="/admin/products">Music</NavLink>, '3'),
+        getItem(<NavLink to="/music">Music</NavLink>, '3'),
         // getItem(<NavLink to="/admin/categori">Danh mục</NavLink>, '4'),
     ]),
 ]
